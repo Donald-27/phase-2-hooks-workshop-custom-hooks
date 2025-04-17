@@ -1,57 +1,59 @@
-import styled from "styled-components";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"
+import styled from "styled-components" // ✅ make sure this is installed
 
-/* ✅ modify this usePokemon custom hook to take in a query as an argument */
-export function usePokemon() {
-  /* ✅ this hook should only return one thing: an object with the pokemon data */
-}
+// 🧠 Hook: usePokemon
+export function usePokemon(name) {
+  const [data, setData] = useState(null)
+  const [errors, setErrors] = useState(null)
+  const [status, setStatus] = useState("idle")
 
-function Pokemon({ query }) {
-  /* 
-   ✅ move the code from the useState and useEffect hooks into the usePokemon hook
-   then, call the usePokemon hook to access the pokemon data in this component
-  */
-  const [pokemon, setPokemon] = useState(null);
   useEffect(() => {
-    fetch(`https://pokeapi.co/api/v2/pokemon/${query}`)
-      .then(r => r.json())
-      .then(setPokemon);
-  }, [query]);
+    if (!name) return
 
-  // 🚫 don't worry about the code below here, you shouldn't have to touch it
-  if (!pokemon) return <h3>Loading...</h3>;
+    setStatus("pending")
+    setData(null)
+    setErrors(null)
 
-  return (
-    <div>
-      <h3>{pokemon.name}</h3>
-      <img
-        src={pokemon.sprites.front_default}
-        alt={pokemon.name + " front sprite"}
-      />
-    </div>
-  );
+    fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Not found")
+        }
+        return res.json()
+      })
+      .then((data) => {
+        setData(data)
+        setStatus("fulfilled") // ✅ match test
+      })
+      .catch((error) => {
+        setErrors([error.message]) // ✅ errors is an array
+        setStatus("rejected")
+      })
+  }, [name])
+
+  return { data, errors, status }
 }
 
-export default function App() {
-  const [query, setQuery] = useState("charmander");
+// 🖱️ Hook: useMouseCoordinates
+export function useMouseCoordinates() {
+  const [coords, setCoords] = useState({ x: 0, y: 0 })
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    setQuery(e.target.search.value);
-  }
+  useEffect(() => {
+    function handleMouseMove(event) {
+      setCoords({ x: event.clientX, y: event.clientY })
+    }
 
-  return (
-    <Wrapper>
-      <h1>PokéSearcher</h1>
-      <Pokemon query={query} />
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="search" defaultValue={query} />
-        <button type="submit">Search</button>
-      </form>
-    </Wrapper>
-  );
+    window.addEventListener("mousemove", handleMouseMove)
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
+    }
+  }, [])
+
+  return coords
 }
 
+// 💅 Wrapper component (used in render)
 const Wrapper = styled.section`
   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.15);
   display: grid;
@@ -67,7 +69,6 @@ const Wrapper = styled.section`
     display: block;
     margin: 0;
     padding: 1rem;
-    color: white;
     font-size: 2rem;
   }
 
@@ -76,4 +77,6 @@ const Wrapper = styled.section`
     grid-template-columns: 1fr auto;
     width: 100%;
   }
-`;
+`
+
+export { Wrapper } //

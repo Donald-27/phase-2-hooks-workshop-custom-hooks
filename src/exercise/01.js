@@ -1,16 +1,15 @@
 import { useEffect } from "react";
 
-/* ✅ create a new function called useDocumentTitle */
-/* 👀 export function useDocumentTitle() {} */
+// ✅ This sets a default value for title if nothing is passed
+export function useDocumentTitle(title = "Welcome to the home page!") {
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+}
 
 export default function Home() {
-  /* 
-    ✅ move the useEffect code into your useDocumentTitle function
-   then, call the useDocumentTitle hook in your component
-  */
-  useEffect(() => {
-    document.title = "Welcome to the home page!";
-  }, []);
+  // ✅ You can still pass in a specific title here
+  useDocumentTitle("Welcome to the home page!");
 
   return (
     <div>
